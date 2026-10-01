@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, JSON, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .db import Base
@@ -20,6 +20,7 @@ class Project(Base):
     slug: Mapped[str] = mapped_column(String(160), unique=True, index=True)
     industry: Mapped[str | None] = mapped_column(String(120), nullable=True)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
+    config: Mapped[dict] = mapped_column(JSON, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
@@ -31,11 +32,50 @@ class Campaign(Base):
     target_country: Mapped[str | None] = mapped_column(String(80), nullable=True)
     language: Mapped[str | None] = mapped_column(String(20), nullable=True)
     conversion_goal: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    targeting_config: Mapped[dict] = mapped_column(JSON, default=dict)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+
+class SocialPost(Base):
+    __tablename__ = "social_posts"
+    __table_args__ = (
+        UniqueConstraint("platform", "external_id", name="uq_social_post_platform_external"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    platform: Mapped[str] = mapped_column(String(40), index=True)
+    external_id: Mapped[str] = mapped_column(String(191))
+    author_platform_id: Mapped[str | None] = mapped_column(String(191), nullable=True, index=True)
+    author_username: Mapped[str | None] = mapped_column(String(191), nullable=True)
+    text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    published_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    ingested_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class SocialComment(Base):
+    __tablename__ = "social_comments"
+    __table_args__ = (
+        UniqueConstraint("platform", "external_id", name="uq_social_comment_platform_external"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    post_id: Mapped[int] = mapped_column(ForeignKey("social_posts.id"), index=True)
+    platform: Mapped[str] = mapped_column(String(40), index=True)
+    external_id: Mapped[str] = mapped_column(String(191))
+    author_platform_id: Mapped[str] = mapped_column(String(191), index=True)
+    author_username: Mapped[str | None] = mapped_column(String(191), nullable=True)
+    text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    published_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    ingested_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
 class Lead(Base):
     __tablename__ = "leads"
+    __table_args__ = (
+        UniqueConstraint("platform", "platform_user_id", name="uq_lead_platform_user"),
+    )
+
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     platform: Mapped[str] = mapped_column(String(40), index=True)
     platform_user_id: Mapped[str] = mapped_column(String(191), index=True)
