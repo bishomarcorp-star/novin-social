@@ -7,9 +7,10 @@ from .routes_connectors import router as connectors_router
 from .routes_hunter_jobs import router as hunter_jobs_router
 from .routes_connector_status import router as connector_status_router
 from .routes_hunter_dry_run import router as hunter_dry_run_router
+from .routes_x_probe import router as x_probe_router
 
 
-app = FastAPI(title="Novin Social API", version="0.4.0")
+app = FastAPI(title="Novin Social API", version="0.5.0")
 app.include_router(hunter_router)
 app.include_router(projects_router)
 app.include_router(ingest_router)
@@ -17,6 +18,7 @@ app.include_router(connectors_router)
 app.include_router(hunter_jobs_router)
 app.include_router(connector_status_router)
 app.include_router(hunter_dry_run_router)
+app.include_router(x_probe_router)
 
 
 @app.get("/health")
@@ -28,6 +30,6 @@ def health():
 def root():
     return {
         "name": "Novin Social",
-        "version": "0.4.0",
+        "version": "0.5.0",
         "mode": "multi-project social sales platform",
     }
