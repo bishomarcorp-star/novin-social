@@ -7,6 +7,10 @@ class Settings(BaseSettings):
     redis_url: str = "redis://redis:6379/0"
     openai_api_key: str | None = None
 
+    x_bearer_token: str | None = None
+    x_search_url: str = "https://api.x.com/2/tweets/search/recent"
+    connector_timeout_seconds: float = 20.0
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
